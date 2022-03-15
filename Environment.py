@@ -73,8 +73,9 @@ class StochasticWindyGridworld:
         ''' Returns vectors p(s'|s,a) and r(s,a,s') for given s and a.
         Only simulates, does not affect the current agent location '''
         if self.initialize_model:
-            # print(self.p_sas[s, a,])
-            # print(np.where(self.p_sas[s, a,] != 0)[0])
+            # print('p_sas: ',self.p_sas[s, a])
+            # print()
+            # print('p_sas_idx: ', np.where(self.p_sas[s, a,] != 0)[0])
             return self.p_sas[s,a], self.r_sas[s,a]
         else:
             raise ValueError("set initialize_model=True when creating Environment")
@@ -164,7 +165,7 @@ class StochasticWindyGridworld:
         return 
 
     def _initialize_plot(self):
-        self.fig,self.ax = plt.subplots()#figsize=(self.width, self.height+1)) # Start a new figure
+        self.fig,self.ax = plt.subplots() #figsize=(self.width, self.height+1)) # Start a new figure
         self.ax.set_xlim([0,self.width])
         self.ax.set_ylim([0,self.height]) 
         self.ax.axes.xaxis.set_visible(False)
