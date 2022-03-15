@@ -22,36 +22,28 @@ class QLearningAgent:
         self.Q_sa = np.zeros((n_states,n_actions))
         
     def select_action(self, s, policy='egreedy', epsilon=None, temp=None):
-        
         if policy == 'egreedy':
             if epsilon is None:
                 raise KeyError("Provide an epsilon")
-                
-            # TO DO: Add own code
-            # a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
-
             # ---My code---
             # epsilon-greedy
-            if np.random.random() >= epsilon:
-                best_action = argmax(self.Q_sa[s, ])
-                return best_action
             else:
-                return np.random.choice(self.Q_sa[s, ])
-
+                if np.random.random() >= epsilon:
+                    action = argmax(self.Q_sa[s, ])
+                else:
+                    action = np.random.choice(range(len(self.Q_sa[s, ])))
+                return action
         elif policy == 'softmax':
             if temp is None:
                 raise KeyError("Provide a temperature")
-                
-            # TO DO: Add own code
-            # a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
             # ---My code---
             p = softmax(self.Q_sa[s, ], temp)
-            action = np.random.choice(np.arange(self.Q_sa[s, ].shape[0]), 1, p=p)
+            action = np.random.choice(range(self.n_actions), 1, p=p)[0]
             return action
         
-    def update(self,s,a,r,s_next,done):
-        # TO DO: Add own code
-        pass
+    def update(self, s, a, r, next_s, lr, gamma):
+        # ---My code---
+        self.Q_sa[s, a] = self.Q_sa[s, a] + lr * (r + gamma * max(self.Q_sa[next_s]) - self.Q_sa[s, a])
 
 def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, temp=None, plot=True):
     ''' runs a single repetition of q_learning
@@ -60,17 +52,25 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
     env = StochasticWindyGridworld(initialize_model=False)
     pi = QLearningAgent(env.n_states, env.n_actions, learning_rate, gamma)
     rewards = []
-
-    # TO DO: Write your Q-learning algorithm here!
-    
-    # if plot:
-    #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Q-learning execution
-
+    s = env.reset()
+    for t in range(n_timesteps):
+        # simulate a single episode from start state to terminal state
+        a = pi.select_action(s, policy, epsilon, temp)
+        next_s, r , done = env.step(a)
+        # if plot and t >= 0.95 * n_timesteps:
+        #     env.render(Q_sa=pi.Q_sa, plot_optimal_policy=True, step_pause=0.05)
+        rewards.append(r)
+        pi.update(s, a, r, next_s, learning_rate, gamma)
+        if done:
+            s = env.reset()
+        else:
+            s = next_s
+    # print(len(rewards))
     return rewards 
 
 def test():
     
-    n_timesteps = 1000
+    n_timesteps = 50000
     gamma = 1.0
     learning_rate = 0.1
 
